@@ -1,0 +1,19 @@
+#!/bin/sh
+# This runs the AI BEFORE the commit finishes
+echo "--------------------------------------------------"
+echo "🛡️ GhostTrace Sentinel: Intercepting Commit..."
+echo "--------------------------------------------------"
+
+# Run the judge engine
+python "C:/Users/samru/Desktop/GhostTrace/judge_engine.py"
+
+# Capture the result
+RESULT=$?
+
+if [ $RESULT -eq 0 ]; then
+    echo "✅ [SENTINEL PASSED]: Code matches Business Logic."
+    exit 0
+else
+    echo "❌ [SENTINEL FAILED]: Commit blocked! Fix your code logic."
+    exit 1
+fi
