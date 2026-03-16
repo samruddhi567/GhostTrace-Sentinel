@@ -1,0 +1,53 @@
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, FileResponse
+import os
+import json
+import shutil
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+REPORT_PATH = "latest_report.json"
+CONTEXT_PATH = "current_context.json"
+
+@app.get("/")
+async def serve_ui():
+    return FileResponse("index.html")
+
+@app.post("/api/login")
+async def login(name: str = Form(...), dev_id: str = Form(...)):
+    if name and dev_id == "ADMIN123":
+        return {"status": "success", "developer": name}
+    raise HTTPException(status_code=401, detail="Unauthorized")
+
+@app.post("/api/sync")
+async def sync_sentinel(requirements: str = Form(...), developer: str = Form(...), design_image: UploadFile = File(...)):
+    try:
+        img_path = f"active_design{os.path.splitext(design_image.filename)[1]}"
+        with open(img_path, "wb") as buffer:
+            shutil.copyfileobj(design_image.file, buffer)
+        
+        with open(CONTEXT_PATH, "w") as f:
+            json.dump({"developer": developer, "requirement": requirements, "image_path": img_path}, f)
+        
+        return {"message": "Synced"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@app.get("/api/report")
+async def get_report():
+    if os.path.exists(REPORT_PATH):
+        with open(REPORT_PATH, "r") as f:
+            return json.load(f)
+    return {"status": "WAITING"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)

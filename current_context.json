@@ -1,0 +1,5 @@
+{
+    "requirement": "The system must only use the 'GhostTrace Blue' color (#007BFF) for all primary buttons. Red buttons are strictly forbidden as they conflict with our brand identity.",
+    "design_spec": "\"Standard Login Form with a single primary action button. Style: Rounded corners (8px).\"",
+    "image_path": "active_design.png"
+}
